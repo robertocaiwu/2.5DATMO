@@ -149,7 +149,7 @@ end
 
 function pim(X, pts, mat, st, frm)
 
-img     = imread( [st.dr.img, sprintf('%06d.png', frm - 1)] );             % load image
+img     = imread( [st.dr.img, sprintf('%s.png', num2str(frm - 1, '%010.f'))] );             % load image
 imshow(img)
 hold on
 % lcl(img, st)                                                             % local grid
@@ -286,16 +286,22 @@ T   = calib(st);                                                           % rea
 pxs = ind(T, pnt, img, fl);                                                % projection of points on image
 function T = calib(st)
 %% calibration - read calibration matrixes P2 & Tr
-fid.clb    = fopen([st.dr.clb,'calib.txt']);                               % read matrixes Pi & Tr
-data       = fscanf(fid.clb,'%c');                                         % load calibration data
-fclose(fid.clb);
-sl         = find(data == ':') + 1;                                        % locations of start of the lines
-el         = find(data == 10 );                                            % locations of end of the lines
-T.P2       = str2num( data(sl(3):el(3)) );                                 % load calibration for left camera(its from start to the end of the line 3)
-T.Tr       = str2num( data(sl(5):el(5)) );                                 % load transformation(its from start to the end of the line 5)
-T.P2       = reshape(T.P2,4,3)'; T.P2(4,:) = [0 0 0 1];                    % reshape calibrations
-T.Tr       = reshape(T.Tr,4,3)'; T.Tr(4,:) = [0 0 0 1];                    % Tr transforms a point from velodyne coordinates into the left rectified 
-                                                                           % camera coordinate system.
+fid.clbv2c    = fopen([st.dr.clb,'calib_velo_to_cam.txt']);                   % read matrixes Pi & Tr
+fid.clbc2i    = fopen([st.dr.clb,'calib_cam_to_cam.txt']);   
+datav2c       = fscanf(fid.clbv2c,'%c');     
+datac2i       = fscanf(fid.clbc2i,'%c');    % load calibration data
+fclose(fid.clbv2c);
+fclose(fid.clbc2i);
+sl         = find(datav2c == ':') + 1;                                        % locations of start of the lines
+el         = find(datav2c == 10 );  
+sl2         = find(datac2i == ':') + 1;                                        % locations of start of the lines
+el2         = find(datac2i == 10 );  
+Rv2c       = str2num( datav2c(sl(4):el(2)) ); % locations of end of the lines
+Tv2c       = str2num( datav2c(sl(5):el(3)) );
+T.Tr       = [reshape(Rv2c, 3, 3) Tv2c']; T.Tr(4,:) = [0 0 0 1];
+P2         = str2num( datac2i(sl2(28):el2(26)) );                                 % load calibration for left camera(its from start to the end of the line 3)
+T.P2       = reshape(P2, 3, 4);
+T.P2(4,:)  = [0 0 0 1];
 end
 function pxs = ind(T, pnt, img, fl)                                        % project velodyne points on image
 %% filter a
@@ -309,7 +315,7 @@ pxs(:,1)   = pxs(:,1) ./ pxs(:,3);                                         % poi
 pxs(:,2)   = pxs(:,2) ./ pxs(:,3);
 pxs        = round(pxs(:, 1:2));                                           % interpolate (it is not that much precise, round is enough!)
 %% filter b
-if fl == 0;                                                                % default
+if fl == 0                                                                % default
 idx.i      = (pxs(:,1) >= 1) & (pxs(:,1) <= size(img, 2)) & ...            % index of points that are inside image 
              (pxs(:,2) >= 1) & (pxs(:,2) <= size(img, 1));                 % index of points that r inside local grid & in front of car & inside image
 pxs        = pxs(idx.i, :);                                                % pixels 

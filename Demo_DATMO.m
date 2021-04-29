@@ -22,6 +22,6 @@ k             = klmi(ocn, ncn, nzn, k, frame, st);            % initialize new k
 [k, ncn, nzn] = asc(k, ocn, szn);                             % data association + new candidates
 k             = klmf(k);                                      % kalman tracking                   
 x             = plt(x, k, pts, frm, st, frame);               % record object locations and plot
-
+x
 end   
 

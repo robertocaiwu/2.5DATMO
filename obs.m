@@ -7,9 +7,11 @@ mat          = grd(pts, st);                 %               last grid
 end
 
 function pts = trj(st, frm)        % [transformed velodyne points, velodyne points, rotation, translation]
-
 %% transformation matrixes [rotation 3x3, translation 3x1]
-fid.tns     = fopen(sprintf('%s%s.txt', st.dr.pose, st.dr.nm),'rb');         % read from directory of poses
+
+%%fid.tns     = fopen(dir(sprintf('%s.txt', num2str(frm - 1, '%010.f'))),'rb');         % read from directory of poses
+
+fid.tns     = fopen(sprintf('%s%s.txt', st.dr.pose, 'poses' ),'rb');         % read from directory of poses
 transfrm    = fscanf(fid.tns, '%g', [12 inf])';                              % list of transformations
 fclose(fid.tns);
 transf      = [transfrm(frm, 1:4); transfrm(frm, 5:8); transfrm(frm, 9:12)]; % transformation matrix in camera coordinate
@@ -17,7 +19,7 @@ c2v         = [0   0   1; -1   0   0; 0   -1   0];                           % c
 pts.rtn     = c2v * transf(1:3, 1:3) * c2v';                                 % rotation    3x3
 pts.trn     = c2v * transf(1:3, 4);                                          % translation 3x1
 %% velodyne points [x, y, z total number of pointsx3]
-fid.pts     = fopen(sprintf('%s%06d.bin', st.dr.pts, frm - 1), 'rb');        % read from directory of points
+fid.pts     = fopen(sprintf('%s%s.bin', st.dr.pts, num2str(frm - 1, '%010.f')), 'rb');        % read from directory of points
 velodyne    = fread(fid.pts, [4 inf], 'single')';   
 fclose(fid.pts);
 pts.pts     = velodyne(:,1:3);                                               % velodyne points
