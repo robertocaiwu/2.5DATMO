@@ -12,13 +12,14 @@ class Kitti:
     """
     frame : specific frame number or 'all' for whole dataset. default = 'all'
     velo_path : velodyne bin file path. default = None
+    poses_path : gps poses txt file path. default = None
     camera_path : left-camera image file path. default = None
     img_type : image type info 'gray' or 'color'. default = 'gray'
     v2c_path : Velodyne to Camera calibration info file path. default = None
     c2c_path : camera to Camera calibration info file path. default = None
     xml_path : XML file having tracklet info
     """
-    def __init__(self, frame='all', velo_path=None, camera_path=None, \
+    def __init__(self, frame='all', velo_path=None, camera_path=None, poses_path=None,  \
                  img_type='gray', v2c_path=None, c2c_path=None, xml_path=None):
         self.__frame_type = frame
         self.__img_type = img_type
@@ -36,6 +37,13 @@ class Kitti:
             self.__camera_file = self.__load_image()
         else:
             self.__camera_path, self.__camera_file = None, None
+
+        if poses_path is not None:
+            self.__poses_path = poses_path
+            self.__poses_file = self.__load_poses()
+        else:
+            self.poses_path, self.__poses_file = None, None
+
         if v2c_path is not None:
             self.__v2c_path = v2c_path
             self.__v2c_file = self.__load_velo2cam()
@@ -90,6 +98,10 @@ class Kitti:
         return self.__camera_file
 
     @property
+    def poses_file(self):
+        return self.__poses_file
+
+    @property
     def v2c_file(self):
         return self.__v2c_file
 
@@ -114,6 +126,20 @@ class Kitti:
         """ Convert bin to numpy array for one frame """
         points = np.fromfile(files[self.__frame_type], dtype=np.float32).reshape(-1, 4)
         return points[:, :3]
+
+    def __get_poses(self, files):
+        """ Get poses for whole dataset"""
+
+        for i in files.keys():
+            points = np.loadtxt(files[i])
+            self.__velo_file = points
+            self.__cur_frame = i
+            yield self.__velo_file
+
+    def __get_pose_frame(self, files):
+        """ Get pose for one frame """
+        pose = np.loadtxt(files[self.__frame_type])
+        return pose
 
     def __get_camera(self, files):
         """ Return image for whole dataset """
@@ -146,6 +172,21 @@ class Kitti:
             velo_xyz = self.__get_velo(velo_files)
 
         return velo_xyz
+
+    def __load_poses(self):
+        """ Return numpy array of poses """
+
+        poses = glob.glob(self.__poses_path + '/*.txt')
+        poses.sort()
+        self.__num_frames = len(poses)
+        pose_files = {i: poses[i] for i in range(len(poses))}
+
+        if self.__frame_type in pose_files:
+            poses = self.__get_pose_frame(pose_files)
+        else:
+            poses = self.__get_poses(pose_files)
+
+        return poses
 
     def __load_image(self):
         """ Return camera image """
@@ -232,9 +273,9 @@ class Kitti:
 
 class Kitti_util(Kitti):
 
-    def __init__(self, frame='all', velo_path=None, camera_path=None, \
+    def __init__(self, frame='all', velo_path=None, camera_path=None, poses_path=None, \
                  img_type='gray', v2c_path=None, c2c_path=None, xml_path=None):
-        super(Kitti_util, self).__init__(frame, velo_path, camera_path, img_type, v2c_path, c2c_path, xml_path)
+        super(Kitti_util, self).__init__(frame, velo_path, camera_path, poses_path, img_type, v2c_path, c2c_path, xml_path)
         self.__h_min, self.__h_max = -180, 180
         self.__v_min, self.__v_max = -24.9, 2.0
         self.__v_res, self.__h_res = 0.42, 0.35
