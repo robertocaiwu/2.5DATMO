@@ -32,6 +32,7 @@ class Settings:
         self.cell_size_y    = 0.2;                                                  # 0.2m
         self.grid_size_x   = int((self.grid_xf - self.grid_xb) / self.cell_size_x); 
         self.grid_size_y   = int((self.grid_yl - self.grid_yr) / self.cell_size_y); 
+        self.grid_size     = self.grid_size_x * self.grid_size_y
 
         # For ground cell removal
         self.height_bias = 1.73

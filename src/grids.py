@@ -22,12 +22,13 @@ class Grid:
         self.grid_avg = np.zeros(self.grid_size) # average
         self.grid_var = np.zeros(self.grid_size)  # variance
         self.grid_valid = np.zeros(self.grid_size) # valid data binary  
-        self.grid_histogram = np.zeros(self.grid_size) # Histogram: number of tall points for object cells  
         self.object_grid = np.zeros(self.grid_size)  # valid objects
         self.R = rotation
         self.t = translation
 
     def build_height_grid(self, point_cloud):
+
+        grid_histogram = np.zeros(self.grid_size) # Histogram: number of tall points for object cells  
         # quantize the index of every point 
         idx_quantizized = np.floor([point_cloud[0,:]/self.settings.cell_size_x, point_cloud[1,:]/self.settings.cell_size_y])
         # transform point's index to (-x, x) and (-y, y) 
@@ -58,13 +59,13 @@ class Grid:
             for j in range(self.settings.grid_size_y):
                 cell_index = (i * self.settings.grid_size_y) + j
                 if self.object_grid[-i,-j] != 0:
-                    self.grid_histogram[-i,-j] = np.sum(np.asarray(cell_points[cell_index]) >= self.settings.road_max)
-                    if self.grid_histogram[-i,-j] != 0 and self.grid_histogram[-i,-j] < self.settings.grid_tr:
+                    grid_histogram[-i,-j] = np.sum(np.asarray(cell_points[cell_index]) >= self.settings.road_max)
+                    if grid_histogram[-i,-j] != 0 and grid_histogram[-i,-j] < self.settings.grid_tr:
                         self.object_grid[-i,-j] = False
 
         # convert matrix into points
         self.grid = np.multiply(self.object_grid, self.grid_avg)
-        imx, imy = np.meshgrid(range(self.grid_size[0]), range(self.grid_size[1]), indexing='xy')
+        imx, imy = np.meshgrid(range(self.grid_size[0]), range(self.grid_size[1]), indexing='ij')
         imx = imx.reshape(self.grid_size[0]*self.grid_size[1],)
         imy = imy.reshape(self.grid_size[0]*self.grid_size[1],)
         imz = self.grid.reshape(self.grid_size[0]*self.grid_size[1],)
