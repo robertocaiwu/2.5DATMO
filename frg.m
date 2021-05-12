@@ -6,15 +6,15 @@ bsz          = ceil(st.fr.sz / min(st.vx.x, st.vx.y));                     % blo
 frm.mat      = zeros(size(mat.mat));
 for i        = 1 : size(mat.mat, 1)
    for j     = 1 : size(mat.mat, 2)      
-Id           = i - bsz; if Id < 1; Id = 1; end                             % find indexes 
-Iu           = i + bsz; if Iu > size(frm.mat, 1); Iu = size(frm.mat, 1); end
-Jd           = j - bsz; if Jd < 1; Jd = 1; end
-Ju           = j + bsz; if Ju > size(frm.mat, 2); Ju = size(frm.mat, 2); end
-blk          = brm.mat(Id : Iu, Jd : Ju);                                  % find neighbourhood block from background
-blk          = abs(blk - mat.mat(i, j));                                   % find difference between foreground and neighbourhood background
-if min(blk(:)) > 0.3 * mat.mat(i, j)                                       % if difference is less than a threshod take foreground as a background
-frm.mat(i, j) = mat.mat(i, j);
-end
+        Id           = i - bsz; if Id < 1; Id = 1; end                             % find indexes 
+        Iu           = i + bsz; if Iu > size(frm.mat, 1); Iu = size(frm.mat, 1); end
+        Jd           = j - bsz; if Jd < 1; Jd = 1; end
+        Ju           = j + bsz; if Ju > size(frm.mat, 2); Ju = size(frm.mat, 2); end
+        blk          = brm.mat(Id : Iu, Jd : Ju);                                  % find neighbourhood block from background
+        blk          = abs(blk - mat.mat(i, j));                                   % find difference between foreground and neighbourhood background
+        if min(blk(:)) > 0.3 * mat.mat(i, j)                                       % if difference is less than a threshod take foreground as a background
+            frm.mat(i, j) = mat.mat(i, j);
+        end
    end
 end
 %% crop center

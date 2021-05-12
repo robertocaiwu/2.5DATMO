@@ -30,14 +30,23 @@ class Settings:
         # cell size
         self.cell_size_x    = 0.2;                                                  # 0.2m
         self.cell_size_y    = 0.2;                                                  # 0.2m
+        # grid size
         self.grid_size_x   = int((self.grid_xf - self.grid_xb) / self.cell_size_x); 
         self.grid_size_y   = int((self.grid_yl - self.grid_yr) / self.cell_size_y); 
-        self.grid_size     = self.grid_size_x * self.grid_size_y
+        self.grid_size     = [self.grid_size_x, self.grid_size_y]
+        self.num_cells     = self.grid_size_x * self.grid_size_y
 
         # For ground cell removal
         self.height_bias = 1.73
         self.road_variance = 0.02
         self.road_max = 0.8
 
-        # History
-        self.max_history = 90
+        # History : background modeling
+        self.max_history = 15
+        self.cells_to_integrate = 10
+        self.minimum_observations = 2
+
+        # Foreground modeling
+        self.neighbor_size = 2
+        self.neighbor_threshold = 0.3
+

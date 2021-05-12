@@ -9,13 +9,13 @@ bgr.con       = zeros(st.vx.ix, st.vx.iy);                                 % con
 for i         = 1 : size(stack.mat, 1)
    for j      = 1 : size(stack.mat, 2)         
       if sum(stack.ind(i, j, :) ~= 0)                                      % if that cell has any valid data on it 
-      ind.val = stack.ind(i, j, :) ~= 0;                                   % find indexes of those valid cells
-      if sum(ind.val) > st.stc.in                                          % if it is more than st.stc.in, just take first st.stc.in measurements
-      ind.ind = find(ind.val == 1);                                        % keep first st.stc.in indexes
-      ind.val(ind.ind(st.stc.in) + 1 : end) = 0;                           % to average over first st.stc.in filled stack's cells     
-      end
-      bgr.mat(i, j) = mean(stack.mat(i, j, ind.val ~= 0));                 % average over all
-      bgr.con(i, j) = sum(double(ind.val));                                % confidence (number of measurements)
+        ind.val = stack.ind(i, j, :) ~= 0;                                   % find indexes of those valid cells
+        if sum(ind.val) > st.stc.in                                          % if it is more than st.stc.in, just take first st.stc.in measurements
+            ind.ind = find(ind.val == 1);                                        % keep first st.stc.in indexes
+            ind.val(ind.ind(st.stc.in) + 1 : end) = 0;                           % to average over first st.stc.in filled stack's cells     
+        end
+        bgr.mat(i, j) = mean(stack.mat(i, j, ind.val ~= 0));                 % average over all
+        bgr.con(i, j) = sum(double(ind.val));                                % confidence (number of measurements)
       end
    end
 end

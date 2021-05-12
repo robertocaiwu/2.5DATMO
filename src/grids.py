@@ -14,7 +14,7 @@ https://doi.org/10.1109/ITSC.2015.133
 import numpy as np
 
 class Grid:
-    def __init__(self, settings_, rotation, translation):
+    def __init__(self, settings_, rotation=None, translation=None):
         self.settings = settings_
         self.grid_size = [self.settings.grid_size_x, self.settings.grid_size_y] 
         self.grid = np.zeros(self.grid_size)  
@@ -25,6 +25,8 @@ class Grid:
         self.object_grid = np.zeros(self.grid_size)  # valid objects
         self.R = rotation
         self.t = translation
+        self.grid_points = None
+        self.grid_points_transformed = None
 
     def build_height_grid(self, point_cloud):
 
@@ -62,18 +64,25 @@ class Grid:
                     grid_histogram[-i,-j] = np.sum(np.asarray(cell_points[cell_index]) >= self.settings.road_max)
                     if grid_histogram[-i,-j] != 0 and grid_histogram[-i,-j] < self.settings.grid_tr:
                         self.object_grid[-i,-j] = False
+        
+        self.grid = np.multiply(self.object_grid, self.grid_avg)
 
         # convert matrix into points
-        self.grid = np.multiply(self.object_grid, self.grid_avg)
-        imx, imy = np.meshgrid(range(self.grid_size[0]), range(self.grid_size[1]), indexing='ij')
-        imx = imx.reshape(self.grid_size[0]*self.grid_size[1],)
-        imy = imy.reshape(self.grid_size[0]*self.grid_size[1],)
-        imz = self.grid.reshape(self.grid_size[0]*self.grid_size[1],)
-        self.grid_points = np.asarray([imx[:] * self.settings.cell_size_x + self.settings.grid_xb, \
-                                       imy[:] * self.settings.cell_size_y + self.settings.grid_yr, \
-                                       imz[:]])
-        rotated_points = self.R.dot(self.grid_points[:,:])
-        self.grid_points_transformed = np.asarray([rotated_points[0,:] + self.t[0], \
-                                                   rotated_points[1,:] + self.t[1], \
-                                                   rotated_points[2,:] + self.t[2]])
+        self.grid_points, self.grid_points_transformed = self.convert_matrix_to_points(self.grid, self.R, self.t)
 
+
+    def convert_matrix_to_points(self, grid, rotation, translation):
+        grid_points = np.zeros([3,self.settings.num_cells])
+        grid_points_transformed = np.zeros([3,self.settings.num_cells])
+        imx, imy = np.meshgrid(range(self.settings.grid_size_x), range(self.settings.grid_size_y), indexing='ij')
+        imx = imx.reshape(self.settings.num_cells,)
+        imy = imy.reshape(self.settings.num_cells,)
+        imz = grid.reshape(self.settings.num_cells,)
+        grid_points = np.asarray([imx[:] * self.settings.cell_size_x + self.settings.grid_xb, \
+                                  imy[:] * self.settings.cell_size_y + self.settings.grid_yr, \
+                                  imz[:]])
+        rotated_points = rotation.dot(grid_points[:,:])
+        grid_points_transformed = np.asarray([rotated_points[0,:] + translation[0], \
+                                              rotated_points[1,:] + translation[1], \
+                                              rotated_points[2,:] + translation[2]])
+        return grid_points, grid_points_transformed
