@@ -27,8 +27,9 @@ class History:
 
         for i in range(self.settings.grid_size_x):
             for j in range(self.settings.grid_size_y):
-                if np.sum([grid.grid_valid[i,j] != 0 for grid in self.stack]):                    # if that cell has any valid data on it 
-                    idx_valid = [grid.grid_valid[i,j] != 0 for grid in self.stack]            
+                # if np.sum([grid.grid_valid[i,j]!= 0 for grid in self.stack]):                    # if that cell has any valid data on it 
+                if np.sum([grid.grid_valid[i,j] > 0 for grid in self.stack]):                    # if that cell has any valid data on it 
+                    idx_valid = [grid.grid_valid[i,j] > 0 for grid in self.stack]            
                     if np.sum(idx_valid) > self.settings.cells_to_integrate:
                         cells_to_integrate = np.where(idx_valid)
                         idx_valid[cells_to_integrate[self.settings.cells_to_integrate:]] = False

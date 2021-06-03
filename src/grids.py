@@ -23,6 +23,7 @@ class Grid:
         self.grid_var = np.zeros(self.grid_size)  # variance
         self.grid_valid = np.zeros(self.grid_size) # valid data binary  
         self.object_grid = np.zeros(self.grid_size)  # valid objects
+        self.occupancy = np.ones(self.grid_size)  # valid objects
         self.R = rotation
         self.t = translation
         self.grid_points = None
@@ -65,7 +66,8 @@ class Grid:
                     if grid_histogram[-i,-j] != 0 and grid_histogram[-i,-j] < self.settings.grid_tr:
                         self.object_grid[-i,-j] = False
         
-        self.grid = np.multiply(self.object_grid, self.grid_avg)
+        # self.grid = np.multiply(self.object_grid, self.grid_avg)
+        self.grid = np.multiply(self.object_grid, self.occupancy)
 
         # convert matrix into points
         self.grid_points, self.grid_points_transformed = self.convert_matrix_to_points(self.grid, self.R, self.t)
@@ -82,7 +84,8 @@ class Grid:
                                   imy[:] * self.settings.cell_size_y + self.settings.grid_yr, \
                                   imz[:]])
         rotated_points = rotation.dot(grid_points[:,:])
+        # rotated_points[2,:] = imz[:]
         grid_points_transformed = np.asarray([rotated_points[0,:] + translation[0], \
                                               rotated_points[1,:] + translation[1], \
-                                              rotated_points[2,:] + translation[2]])
+                                              rotated_points[2,:] ])
         return grid_points, grid_points_transformed

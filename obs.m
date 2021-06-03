@@ -55,6 +55,7 @@ for  i    = 1:ix                                                                
    if sum(idx.idx) ~= 0                                                                  % if cell is not empty
    cll{i, j}        = pts.pts(idx.idx, 3);                                               % store point data in cells
    mid.ave(i, j)    = mean(cll{i, j});                                                   % average: sum/number
+   mid.ave(i, j)    = 1; 
    mid.var(i, j)    = var(cll{i, j});                                                    % variance
    mid.max(i, j)    = max(cll{i, j});                                                    % maximum
    idx.val(i, j)    = ~isempty(cll{i, j});                                               % valid data binary   

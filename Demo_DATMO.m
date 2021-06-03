@@ -10,7 +10,7 @@ close all
 [st, stack]   = stt;                                          % set parameters
 x.trc         = []; ncn = []; k = []; nzn = [];               % keep object locations for plot
 %% datmo
-for frame     = st.st.st : st.st.tn 
+for frame     = 1065 : 1075
 
 %% observations
 [mat, pts]    = obs(st, frame);                               % points (with trns) and grid    
